@@ -57,6 +57,24 @@ UART 통신의 무결성을 보장하기 위해 송신부(TX)와 수신부(RX)�
     ```
 * **Comparison:** Monitor로부터 수신된 실제 카운터 값과 Queue의 앞부분(`pop_front`)을 비교하여 검증.
 
+* # 🔍 Datapath & Control Logic Verification Details
+
+## 🎯 검증 목표 (Verification Goal)
+카운터 시스템의 핵심인 **Datapath(14-bit Counter)**가 제어 신호(Enable, Mode, Clear)에 따라 정확하게 동작하는지 검증합니다. 특히 **Corner Case**(0 $\leftrightarrow$ 9999 오버플로우/언더플로우)와 **제어 신호 우선순위**를 중점적으로 확인합니다.
+
+## 🛠️ 검증 전략 (Verification Strategy)
+
+### 1. Constrained Random Stimulus (제약된 무작위 입력)
+모든 가능한 입력 조합을 테스트하기 위해 `Constraint`를 사용하여 의미 있는 시나리오를 생성했습니다. `Clear` 신호의 빈도를 낮추어 카운팅 동작이 충분히 일어나도록 조정했습니다.
+
+```systemverilog
+// tb_cu_dp_systemverilog.sv
+constraint input_dist {
+    i_enable dist { 0 :/ 20, 1 :/ 80 }; // 80% 확률로 Enable
+    i_mode   dist { 0 :/ 30, 1 :/ 70 }; // 70% 확률로 Up Mode
+    i_clear  dist { 0 :/ 99, 1 :/ 1  }; // 1% 확률로 Clear (Rare Event)
+}
+
 ---
 
 ## 📊 시뮬레이션 결과 (Simulation Results)
